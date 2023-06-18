@@ -44,3 +44,22 @@ TIEMPOS_CARGA_DESCARGA = {
     3: 28,
     4: 35,
 }
+
+PESO_CAMIONES = {
+    1: {
+        'sin_carga': 31,
+        'peso_maximo': 38
+    },
+    2: {
+        'sin_carga': 25,
+        'peso_maximo': 30
+    },
+    3: {
+        'sin_carga': 37,
+        'peso_maximo': 44
+    },
+    4: {
+        'sin_carga': 43,
+        'peso_maximo': 52
+    },
+}
