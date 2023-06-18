@@ -22,5 +22,10 @@ class Camion:
         desvio = PESAJES_CAMIONES.get(self.tipo).get('desvio')
         return round(np.random.normal(loc=media, scale=desvio))
     
+    def cargar_al_maximo(self):
+        peso_minimo = PESO_CAMIONES.get(self.tipo)['sin_carga']
+        peso_maximo = PESO_CAMIONES.get(self.tipo)['peso_maximo']
+        self.carga_neta = peso_maximo - peso_minimo
+    
     def __str__(self):
         return f'Tipo: {self.tipo} - Carga: {self.carga_neta}'
