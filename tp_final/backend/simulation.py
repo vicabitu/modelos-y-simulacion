@@ -4,6 +4,7 @@ import numpy as np
 from models.camion import Camion
 from models.evento import Evento
 from models.recurso import Recurso
+from models.planta import Planta
 from constants import (
     TIEMPOS_DE_VIAJE,
     TIEMPOS_CARGA_DESCARGA,
@@ -100,6 +101,7 @@ def simulacion():
     puesto_de_descarga_centro_distribucion = Recurso()
     puesto_de_carga_centro_reabastecimiento = Recurso()
     balanza_planta = Recurso('Balanza')
+    planta = Planta()
 
     cantidad_de_produccion_diaria = 0
 
@@ -199,10 +201,11 @@ def simulacion():
                     nuevo_evento = Evento(evento_actual.objeto, reloj + 1, ARRIBO_COLA_CARGA_PRODUCTO_TERMINADO)
                     nuevos_eventos.append(nuevo_evento)
                     puesto_de_descarga_planta.libre = True
-                    if cantidad_materia_prima_en_planta >= CANTIDAD_MATERIA_PRIMA_PARA_PRODUCIR: #Empiezo a producir
+                    if cantidad_materia_prima_en_planta >= CANTIDAD_MATERIA_PRIMA_PARA_PRODUCIR and planta.libre: #Empiezo a producir
                         duracion = calcular_tiempo_de_produccion_de_planta() + reloj
-                        nuevo_evento = Evento('Aca no se que va', duracion, FIN_PRODUCCION_PLANTA)
+                        nuevo_evento = Evento(planta, duracion, FIN_PRODUCCION_PLANTA)
                         nuevos_eventos.append(nuevo_evento)
+                        planta.libre = False
                     
                 elif evento_actual.nombre == ARRIBO_COLA_CARGA_PRODUCTO_TERMINADO:
                     print(f'Evento: {ARRIBO_COLA_CARGA_PRODUCTO_TERMINADO}')
@@ -225,8 +228,13 @@ def simulacion():
                     cantidad_de_producto_terminada_en_planta -= nuevo_evento.objeto.carga_neta
                 elif evento_actual.nombre == FIN_PRODUCCION_PLANTA:
                     print(f'Evento: {FIN_PRODUCCION_PLANTA}')
+                    planta.libre = True
                     cantidad_de_producto_terminada_en_planta += 10000
-                    # Aca tengo que tomar un camion de la cola de carga de producto terminado?
+                    if puesto_de_carga_planta.cola.length > 0 and puesto_de_carga_planta.libre:
+                        camion = puesto_de_carga_planta.cola.pop(0)
+                        duracion = obtener_tiempo_carga_descarga_segun_tipo_de_camion(camion) + reloj
+                        nuevo_evento = Evento(camion, duracion, FIN_CARGA_PRODUCTO_TERMINADO)
+                        nuevos_eventos.append(nuevo_evento)
                 # Centro de distribucion
                 elif evento_actual.nombre == ARRIBO_COLA_DESCARGA_DISTRIBUCION:
                     print(f'Evento: {ARRIBO_COLA_DESCARGA_DISTRIBUCION}')
