@@ -71,8 +71,8 @@ def obtener_tiempo_carga_descarga_segun_tipo_de_camion(tipo_de_camion):
 def ordenar_eventos(eventos):
     return sorted(eventos, key=lambda evento: evento.duracion)
 
-def calcular_tiempo_de_pesaje_segun_tipo_de_camion(tipo_de_camion):
-    return 11
+def calcular_tiempo_de_pesaje_de_camion():
+    return round(np.random.normal(loc=11, scale=3))
 
 def inicializar_eventos(camiones):
     eventos = []
@@ -171,7 +171,7 @@ def simulacion():
                         camion = balanza_planta.cola.pop(0)
                         balanza_planta.camion = camion
                         balanza_planta.libre = False
-                        duracion = calcular_tiempo_de_pesaje_segun_tipo_de_camion(camion)
+                        duracion = calcular_tiempo_de_pesaje_de_camion()
                         # balanza_planta.eliminar_camion(evento_actual.objeto)
                         nuevo_evento = Evento(camion, duracion, FIN_PESAJE_PLANTA)
                         nuevos_eventos.append(nuevo_evento)
