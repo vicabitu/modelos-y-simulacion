@@ -54,7 +54,7 @@ def generar_camiones():
     for i in range(15):
         numero_aleatorio = random.random()
         tipo_de_camion = generar_tipo_de_camion(numero_aleatorio)
-        camion = Camion(tipo_de_camion)
+        camion = Camion(tipo_de_camion, i)
         camiones.append(camion)
     return camiones
 
@@ -67,6 +67,7 @@ def calcular_tiempo_de_produccion_de_planta():
     return 10 + round(np.random.exponential(scale=5))
 
 def obtener_tiempo_carga_descarga_segun_tipo_de_camion(tipo_de_camion):
+    print(f'Tiempo de carga/descarga: {TIEMPOS_CARGA_DESCARGA.get(tipo_de_camion)}')
     return TIEMPOS_CARGA_DESCARGA.get(tipo_de_camion)
 
 def ordenar_eventos(eventos):
@@ -105,44 +106,61 @@ def simulacion():
 
     cantidad_de_produccion_diaria = 0
 
-    print('Simulacion')
     camiones = generar_camiones()
-    for camion in camiones:
-        camion.set_carga()
-        print(camion)
     eventos_futuros = ordenar_eventos(inicializar_eventos(camiones))
-    for evento in eventos_futuros:
-        print(evento)
+    for e in eventos_futuros:
+        print(e)
     for experimentos in range(EXPERIMENTOS): #años
         for corridas in range(CORRIDAS): #dias
             print('Comienzo')
             while reloj <= 900:
                 nuevos_eventos = []
                 evento_actual = eventos_futuros[0]
+                print(f'> Reloj al inicio: {reloj}')
+                print(f'Duracion evento actual: {evento_actual.duracion}')
                 # Barraca:
                 if evento_actual.nombre == ARRIBO_COLA_CARGA_BARRACA:
-                    print(f'Evento: {ARRIBO_COLA_CARGA_BARRACA}')
+                    print(f'Evento: ARRIBO_COLA_CARGA_BARRACA')
                     if puesto_de_carga_barraca.libre:
-                        puesto_de_carga_barraca.cola.append(nuevo_evento.objeto)
+                        print('if')
+                        puesto_de_carga_barraca.cola.append(evento_actual.objeto)
                         camion = puesto_de_carga_barraca.cola.pop(0)
                         puesto_de_carga_barraca.camion = camion
                         puesto_de_carga_barraca.libre = False
-                        duracion = obtener_tiempo_carga_descarga_segun_tipo_de_camion(camion) + reloj
+                        camion.set_carga()
+                        duracion = obtener_tiempo_carga_descarga_segun_tipo_de_camion(camion.tipo) + reloj
                         nuevo_evento = Evento(camion, duracion, FIN_CARGA_BARRACA)
                         nuevos_eventos.append(nuevo_evento)
-                        camion.set_carga()
+                        print('Puesto de carga:')
+                        print(puesto_de_carga_barraca)
+                        print('Camion que ingresa a la cola:')
+                        print(camion)
+                        print(f'Duracion: {duracion}')
+                        print('Nuevo evento:')
+                        print(nuevo_evento)
                     else:
+                        print('else')
                         puesto_de_carga_barraca.cola.append(evento_actual.objeto)
+                        print('Puesto de carga:')
+                        print(puesto_de_carga_barraca)
                 elif evento_actual.nombre == FIN_CARGA_BARRACA:
-                    print(f'Evento: {FIN_CARGA_BARRACA}')
+                    print(f'Evento: FIN_CARGA_BARRACA')
                     # puesto_de_carga_barraca.eliminar_camion(evento_actual.objeto) # Porque elimino el camion?
-                    puesto_de_descarga_planta.libre = True
-                    stock_en_barraca -= evento_actual.objeto.carga_neta
-                    duracion = calcular_tiempo_de_viaje_segun_tipo_de_camion(evento_actual.objeto.tipo) + reloj
-                    nuevo_evento = Evento(evento_actual.objeto, duracion, ARRIBO_COLA_PESAJE_PLANTA)
+                    # Deberia tomar un nuevo camion de la cola para que se pese?
+                    camion = evento_actual.objeto
+                    puesto_de_carga_barraca.libre = True
+                    stock_en_barraca -= camion.carga_neta
+                    duracion = calcular_tiempo_de_viaje_segun_tipo_de_camion(camion.tipo) + reloj
+                    nuevo_evento = Evento(camion, duracion, ARRIBO_COLA_PESAJE_PLANTA)
                     nuevos_eventos.append(nuevo_evento)
+                    camion.materia_prima = True
+                    print('Puesto de carga:')
+                    print(puesto_de_carga_barraca)
+                    print(f'Duracion: {duracion}')
+                    print('Nuevo evento:')
+                    print(nuevo_evento)
                 elif evento_actual.nombre == ARRIBO_COLA_DESCARGA_BARRACA:
-                    print(f'Evento: {ARRIBO_COLA_DESCARGA_BARRACA}')
+                    print(f'Evento: ARRIBO_COLA_DESCARGA_BARRACA')
                     if puesto_de_descarga_barraca.libre:
                         puesto_de_descarga_barraca.cola.append(nuevo_evento.objeto)
                         camion = puesto_de_descarga_barraca.cola.pop(0)
@@ -154,7 +172,7 @@ def simulacion():
                     else:
                         puesto_de_descarga_barraca.cola.append(evento_actual.objeto)
                 elif evento_actual.nombre == FIN_DESCARGA_BARRACA:
-                    print(f'Evento: {FIN_DESCARGA_BARRACA}')
+                    print(f'Evento: FIN_DESCARGA_BARRACA')
                     stock_en_barraca += evento_actual.objeto.carga_neta
                     evento_actual.objeto.carga_neta = 0
                     nuevo_evento = Evento(evento_actual.objeto, reloj + 1, ARRIBO_COLA_CARGA_BARRACA)
@@ -162,7 +180,7 @@ def simulacion():
                     puesto_de_descarga_barraca.libre = True
                 # Planta:
                 elif evento_actual.nombre == ARRIBO_COLA_PESAJE_PLANTA:
-                    print(f'Evento: {ARRIBO_COLA_PESAJE_PLANTA}')
+                    print(f'Evento: ARRIBO_COLA_PESAJE_PLANTA')
                     if balanza_planta.libre:
                         balanza_planta.cola.append(nuevo_evento.objeto)
                         camion = balanza_planta.cola.pop(0)
@@ -172,10 +190,17 @@ def simulacion():
                         # balanza_planta.eliminar_camion(evento_actual.objeto)
                         nuevo_evento = Evento(camion, duracion, FIN_PESAJE_PLANTA)
                         nuevos_eventos.append(nuevo_evento)
+                        print('Balanza:')
+                        print(balanza_planta)
+                        print('Camion que ingresa a la balanza:')
+                        print(camion)
+                        print(f'Duracion: {duracion}')
+                        print('Nuevo evento:')
+                        print(nuevo_evento)
                     else:
                         balanza_planta.cola.append(evento_actual.objeto)
                 elif evento_actual.nombre == FIN_PESAJE_PLANTA:
-                    print(f'Evento: {FIN_PESAJE_PLANTA}')
+                    print(f'Evento: FIN_PESAJE_PLANTA')
                     balanza_planta.libre = True
                     if evento_actual.objeto.materia_prima:
                         nuevo_evento = Evento(evento_actual.objeto, reloj + 1, ARRIBO_COLA_DESCARGA_MATERIA_PRIMA_PLANTA)
@@ -184,7 +209,7 @@ def simulacion():
                         nuevo_evento = Evento(evento_actual.objeto, duracion, ARRIBO_COLA_DESCARGA_DISTRIBUCION)
                     nuevos_eventos.append(nuevo_evento)
                 elif evento_actual.nombre == ARRIBO_COLA_DESCARGA_MATERIA_PRIMA_PLANTA:
-                    print(f'Evento: {ARRIBO_COLA_DESCARGA_MATERIA_PRIMA_PLANTA}')
+                    print(f'Evento: ARRIBO_COLA_DESCARGA_MATERIA_PRIMA_PLANTA')
                     if puesto_de_descarga_planta.libre:
                         puesto_de_descarga_planta.cola.append(nuevo_evento.objeto)
                         camion = puesto_de_descarga_planta.cola.pop(0)
@@ -196,6 +221,7 @@ def simulacion():
                     else:
                         puesto_de_descarga_planta.cola.append(evento_actual.objeto)
                 elif evento_actual.nombre == FIN_DESCARGA_MATERIA_PRIMA_PLANTA:
+                    print(f'Evento: FIN_DESCARGA_MATERIA_PRIMA_PLANTA')
                     cantidad_materia_prima_en_planta += evento_actual.objeto.carga_neta
                     evento_actual.objeto.carga_neta = 0
                     nuevo_evento = Evento(evento_actual.objeto, reloj + 1, ARRIBO_COLA_CARGA_PRODUCTO_TERMINADO)
@@ -208,7 +234,7 @@ def simulacion():
                         planta.libre = False
                     
                 elif evento_actual.nombre == ARRIBO_COLA_CARGA_PRODUCTO_TERMINADO:
-                    print(f'Evento: {ARRIBO_COLA_CARGA_PRODUCTO_TERMINADO}')
+                    print(f'Evento: ARRIBO_COLA_CARGA_PRODUCTO_TERMINADO')
                     # Aca deberia preguntar si hay producto terminado?
                     if cantidad_de_producto_terminada_en_planta > 0:
                         if puesto_de_carga_planta.libre:
@@ -222,22 +248,25 @@ def simulacion():
                         else:
                             puesto_de_carga_planta.cola.append(nuevo_evento.objeto)
                 elif evento_actual.nombre == FIN_CARGA_PRODUCTO_TERMINADO:
-                    nuevo_evento = Evento(evento_actual.objeto, reloj + 1, ARRIBO_COLA_PESAJE_PLANTA)
+                    print(f'Evento: FIN_CARGA_PRODUCTO_TERMINADO')
+                    camion = evento_actual.objeto
+                    nuevo_evento = Evento(camion, reloj + 1, ARRIBO_COLA_PESAJE_PLANTA)
                     nuevos_eventos.append(nuevo_evento)
                     puesto_de_carga_planta.libre = True
                     cantidad_de_producto_terminada_en_planta -= nuevo_evento.objeto.carga_neta
+                    camion.materia_prima = False
                 elif evento_actual.nombre == FIN_PRODUCCION_PLANTA:
-                    print(f'Evento: {FIN_PRODUCCION_PLANTA}')
+                    print(f'Evento: FIN_PRODUCCION_PLANTA')
                     planta.libre = True
                     cantidad_de_producto_terminada_en_planta += 10000
-                    if puesto_de_carga_planta.cola.length > 0 and puesto_de_carga_planta.libre:
+                    if len(puesto_de_carga_planta.cola) > 0 and puesto_de_carga_planta.libre:
                         camion = puesto_de_carga_planta.cola.pop(0)
                         duracion = obtener_tiempo_carga_descarga_segun_tipo_de_camion(camion) + reloj
                         nuevo_evento = Evento(camion, duracion, FIN_CARGA_PRODUCTO_TERMINADO)
                         nuevos_eventos.append(nuevo_evento)
                 # Centro de distribucion
                 elif evento_actual.nombre == ARRIBO_COLA_DESCARGA_DISTRIBUCION:
-                    print(f'Evento: {ARRIBO_COLA_DESCARGA_DISTRIBUCION}')
+                    print(f'Evento: ARRIBO_COLA_DESCARGA_DISTRIBUCION')
                     # Puesto de descarga libre o ocupado
                     if puesto_de_descarga_centro_distribucion.libre:
                         cantidad_de_produccion_diaria += evento_actual.objeto.carga_neta # calculo para las estadisticas
@@ -251,6 +280,7 @@ def simulacion():
                     else:
                         puesto_de_descarga_centro_distribucion.cola.append(evento_actual.objeto)
                 elif evento_actual.nombre == FIN_DESCARGA_CAMION_DISTRIBUCION: # en que momento calculo el tiempo que va a tardar en descargar
+                    print(f'Evento: FIN_DESCARGA_CAMION_DISTRIBUCION')
                     if stock_en_barraca <= PUNTO_DE_REORDEN:
                         duracion = calcular_tiempo_de_viaje_segun_tipo_de_camion(evento_actual.objeto.tipo) + reloj
                         nuevo_evento = Evento(evento_actual.objeto, duracion, ARRIBO_COLA_CARGA_REABASTECIMIENTO)
@@ -261,7 +291,7 @@ def simulacion():
                     puesto_de_descarga_centro_distribucion.libre = True
                 # Centro reabastecimiento
                 elif evento_actual.nombre == ARRIBO_COLA_CARGA_REABASTECIMIENTO:
-                    print(f'Evento: {ARRIBO_COLA_CARGA_REABASTECIMIENTO}')
+                    print(f'Evento: ARRIBO_COLA_CARGA_REABASTECIMIENTO')
                     if puesto_de_carga_centro_reabastecimiento.libre:
                         puesto_de_carga_centro_reabastecimiento.cola.append(nuevo_evento.objeto)
                         camion = puesto_de_carga_centro_reabastecimiento.cola.pop(0)
@@ -273,19 +303,22 @@ def simulacion():
                     else:
                         puesto_de_carga_centro_reabastecimiento.cola.append(evento_actual.objeto)
                 elif evento_actual.nombre == FIN_CARGA_CAMION_REABASTECIMIENTO:
-                    duracion = calcular_tiempo_de_viaje_segun_tipo_de_camion(evento_actual.objeto.tipo) + reloj
+                    print(f'Evento: FIN_CARGA_CAMION_REABASTECIMIENTO')
+                    camion = evento_actual.objeto
+                    duracion = calcular_tiempo_de_viaje_segun_tipo_de_camion(camion.tipo) + reloj
                     nuevo_evento = Evento(evento_actual.objeto, duracion, ARRIBO_COLA_DESCARGA_BARRACA)
                     nuevos_eventos.append(nuevo_evento)
                     puesto_de_carga_centro_reabastecimiento.libre = True
+                    camion.materia_prima = True
                 
                 reloj += evento_actual.duracion
+                print(f'Reloj al final: {reloj}')
                 
                 for e in nuevos_eventos:
                     eventos_futuros.append(e)
 
-                # TO DO: Eliminar el evento atendido
+                eventos_futuros.remove(evento_actual)
                 eventos_futuros = ordenar_eventos(eventos_futuros)
-
 
 if __name__ == '__main__':
     simulacion()
