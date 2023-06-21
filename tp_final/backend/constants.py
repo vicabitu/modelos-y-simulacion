@@ -22,19 +22,19 @@ TIEMPOS_DE_VIAJE = {
 PESAJES_CAMIONES = {
     1: {
         'media': 34,
-        'desvio': 6.2
+        'desvio': 3
     },
     2: {
         'media': 27.5,
-        'desvio': 4.5
+        'desvio': 2
     },
     3: {
         'media': 40,
-        'desvio': 2.3
+        'desvio': 1.1
     },
     4: {
         'media': 49,
-        'desvio': 1.4
+        'desvio': 0.7
     },
 }
 
