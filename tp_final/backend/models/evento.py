@@ -5,4 +5,5 @@ class Evento:
         self.nombre = nombre
     
     def __str__(self):
-        return f'Camion: tipo {self.objeto.tipo} - Duracion: {self.duracion} - Nombre: {self.nombre}'
+        info_camion = self.objeto.__str__()
+        return f'Camion: {info_camion} - Duracion: {self.duracion} - Nombre: {self.nombre}'
