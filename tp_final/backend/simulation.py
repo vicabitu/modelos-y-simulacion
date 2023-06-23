@@ -1,9 +1,7 @@
 import random
-import numpy as np
 
 from models.camion import Camion
 from models.evento import Evento
-from models.recurso import Recurso
 from models.planta import Planta
 from models.balanza import Balanza
 from models.puesto_de_carga import PuestoCargaDescarga
@@ -36,7 +34,7 @@ def ordenar_eventos(eventos):
 def inicializar_eventos(camiones):
     eventos = []
     for camion in camiones:
-        duracion = camion.calcular_tiempo_de_viaje(camion.tipo, 0)
+        duracion = camion.calcular_tiempo_de_viaje(0)
         evento = Evento(camion, duracion, ARRIBO_COLA_CARGA_BARRACA)
         eventos.append(evento)
     return eventos
@@ -72,7 +70,6 @@ def simulacion():
     for e in eventos_futuros:
         print(e)
     for experimentos in range(EXPERIMENTOS): #años
-        # for corridas in range(CORRIDAS): #dias
         reloj = 0
         cantidad_de_produccion_diaria = 0
         resetear_camiones(camiones)
@@ -100,9 +97,8 @@ def simulacion():
                 # Deberia tomar un nuevo camion de la cola para que se pese?
                 puesto_de_carga_barraca.liberar()
                 puesto_de_carga_barraca.cargar_camion(reloj, FIN_CARGA_BARRACA)
-                stock_en_barraca -= camion.carga_neta
-                
                 camion = evento_actual.objeto
+                stock_en_barraca -= camion.carga_neta
                 nuevo_evento = camion.viajar(reloj, materia_prima=True, nombre_evento=ARRIBO_COLA_PESAJE_PLANTA)
                 nuevos_eventos.append(nuevo_evento)
                 
