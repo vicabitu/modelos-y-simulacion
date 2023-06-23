@@ -96,11 +96,13 @@ def simulacion():
                 # puesto_de_carga_barraca.eliminar_camion(evento_actual.objeto) # Porque elimino el camion?
                 # Deberia tomar un nuevo camion de la cola para que se pese?
                 puesto_de_carga_barraca.liberar()
-                puesto_de_carga_barraca.cargar_camion(reloj, FIN_CARGA_BARRACA)
+                nuevo_evento_1 = puesto_de_carga_barraca.cargar_camion(reloj, FIN_CARGA_BARRACA)
+
                 camion = evento_actual.objeto
                 stock_en_barraca -= camion.carga_neta
-                nuevo_evento = camion.viajar(reloj, materia_prima=True, nombre_evento=ARRIBO_COLA_PESAJE_PLANTA)
-                nuevos_eventos.append(nuevo_evento)
+                nuevo_evento_2 = camion.viajar(reloj, materia_prima=True, nombre_evento=ARRIBO_COLA_PESAJE_PLANTA)
+                
+                nuevos_eventos.extend([nuevo_evento_1, nuevo_evento_2])
                 
             elif evento_actual.nombre == ARRIBO_COLA_DESCARGA_BARRACA:
                 puesto_de_descarga_barraca.cola.append(evento_actual.objeto)
@@ -157,22 +159,24 @@ def simulacion():
                 nuevo_evento = Evento(camion, reloj + 1, ARRIBO_COLA_CARGA_PRODUCTO_TERMINADO)
                 nuevos_eventos.append(nuevo_evento)
 
+                # acá comienza la producción
                 if cantidad_materia_prima_en_planta >= CANTIDAD_MATERIA_PRIMA_PARA_PRODUCIR and planta.libre: #Empiezo a producir
-                    nuevo_evento = planta.producir(reloj)
-                    nuevos_eventos.append(nuevo_evento)
-            
-            # [REVISAR]: lo que sigue está desactualizado.
+                    ciclos_completos, ciclos_incompletos = planta.calcular_ciclos(cantidad_materia_prima_en_planta)
+                    cantidad_materia_prima_en_planta -= ciclos_completos # la cantidad de materia prima es igual a la cantidad de ciclos de producción porque 1.1 ton produce 1 ton
+                    cantidad_de_producto_terminada_en_planta += ciclos_completos
+                    inicio = reloj
+                    for ciclo in range(ciclos):
+                        nuevo_evento = planta.producir(inicio)
+                        duracion_previa = nuevo_evento.duracion
+                        nuevos_eventos.append(nuevo_evento)
+                        if ciclo > 0:
+                            inicio += duracion_previa
+
             elif evento_actual.nombre == FIN_PRODUCCION_PLANTA:
                 #print(f'Evento: FIN_PRODUCCION_PLANTA')
                 planta.liberar()
-
-                cantidad_de_producto_terminada_en_planta += 10000
-                if len(puesto_de_carga_planta.cola) > 0 and puesto_de_carga_planta.libre:
-                    camion = puesto_de_carga_planta.cola.pop(0)
-                    duracion = obtener_tiempo_carga_descarga_segun_tipo_de_camion(camion) + reloj
-                    nuevo_evento = Evento(camion, duracion, FIN_CARGA_PRODUCTO_TERMINADO)
-                    nuevos_eventos.append(nuevo_evento)
-            # -----
+                nuevo_evento = puesto_de_carga_planta.cargar_camion(reloj, FIN_CARGA_PRODUCTO_TERMINADO)
+                nuevos_eventos.append(nuevo_evento)
                 
             elif evento_actual.nombre == ARRIBO_COLA_CARGA_PRODUCTO_TERMINADO:
                 #print(f'Evento: ARRIBO_COLA_CARGA_PRODUCTO_TERMINADO')
