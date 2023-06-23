@@ -1,4 +1,5 @@
 from .recurso import Recurso
+from .evento import Evento
 from constants import *
 
 class PuestoCargaDescarga(Recurso):
