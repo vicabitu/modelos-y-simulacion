@@ -12,7 +12,7 @@ class Camion:
         self.id = id
     
     def set_carga(self):
-        pesaje = self.calcular_pesaje_segun_tipo_de_camion()
+        pesaje = self.calcular_pesaje()
         if pesaje < PESO_CAMIONES.get(self.tipo).get('sin_carga'):
             pesaje = PESO_CAMIONES.get(self.tipo).get('sin_carga')
         elif pesaje > PESO_CAMIONES.get(self.tipo).get('peso_maximo'):
