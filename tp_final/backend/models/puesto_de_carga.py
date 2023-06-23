@@ -1,4 +1,4 @@
-from recurso import Recurso
+from .recurso import Recurso
 from constants import *
 
 class PuestoCargaDescarga(Recurso):

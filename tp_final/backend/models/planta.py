@@ -1,4 +1,6 @@
+import numpy as np
 from constants import *
+from .evento import Evento
 
 class Planta:
     def __init__(self):

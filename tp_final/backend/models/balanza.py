@@ -1,4 +1,6 @@
-from recurso import Recurso
+from .recurso import Recurso
+from .evento import Evento
+from constants import FIN_PESAJE_PLANTA
 
 class Balanza(Recurso):
     def __init__(self, tipo='Balanza', libre=True, camion=None, cola=[]):

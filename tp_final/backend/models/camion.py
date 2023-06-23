@@ -1,6 +1,7 @@
 import numpy as np
+from models.evento import Evento
 from constants import (
-    PESO_CAMIONES, PESAJES_CAMIONES
+    PESO_CAMIONES, PESAJES_CAMIONES, TIEMPOS_DE_VIAJE, TIEMPOS_CARGA_DESCARGA, ARRIBO_COLA_CARGA_BARRACA
 )
 
 class Camion:
