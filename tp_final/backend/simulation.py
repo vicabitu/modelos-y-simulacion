@@ -53,6 +53,7 @@ def simulacion():
     reloj = 0
     eventos_futuros = []
     cantidad_de_producto_terminada_en_planta = 0
+    cantidad_producida_en_total = []
     
     puesto_de_carga_barraca = PuestoCargaDescarga()
     puesto_de_descarga_barraca = PuestoCargaDescarga()
@@ -69,22 +70,22 @@ def simulacion():
         print(e)
     for experimentos in range(EXPERIMENTOS): #años
         reloj = 0
-        cantidad_de_produccion_diaria = 0
         resetear_camiones(camiones)
         print('Comienzo')
         while len(eventos_futuros) > 0:
+            cantidad_producida = 0
             nuevos_eventos = []
             evento_actual = eventos_futuros[0]
             print(f'Dia: {round(reloj/900)}')
             # Aca puede ser que venga el problema del loop infinito
             reloj = evento_actual.duracion
-            print(f'> Reloj: {reloj}')
-            print(f"Procesando: {evento_actual}")
+            # print(f'> Reloj: {reloj}')
+            # print(f"Procesando: {evento_actual}")
             # Barraca:
             if evento_actual.nombre == ARRIBO_COLA_CARGA_BARRACA:
                 puesto_de_carga_barraca.cola.append(evento_actual.objeto)
-                print('Puesto de carga:')
-                print(puesto_de_carga_barraca.mostrar_en_cola())
+                # print('Puesto de carga:')
+                # print(puesto_de_carga_barraca.mostrar_en_cola())
                 if puesto_de_carga_barraca.libre:
                     nuevo_evento = puesto_de_carga_barraca.cargar_camion(reloj, FIN_CARGA_BARRACA)
                     nuevos_eventos.append(nuevo_evento)    
@@ -104,8 +105,8 @@ def simulacion():
                 
             elif evento_actual.nombre == ARRIBO_COLA_DESCARGA_BARRACA:
                 puesto_de_descarga_barraca.cola.append(evento_actual.objeto)
-                print('Puesto de descarga:')
-                print(puesto_de_descarga_barraca.mostrar_en_cola())
+                # print('Puesto de descarga:')
+                # print(puesto_de_descarga_barraca.mostrar_en_cola())
                 if puesto_de_descarga_barraca.libre:
                     nuevo_evento = puesto_de_descarga_barraca.descargar_camion(reloj, FIN_DESCARGA_BARRACA)
                     nuevos_eventos.append(nuevo_evento)
@@ -122,8 +123,8 @@ def simulacion():
             # Planta:
             elif evento_actual.nombre == ARRIBO_COLA_PESAJE_PLANTA:
                 balanza_planta.cola.append(evento_actual.objeto)
-                print('Balanza en planta:')
-                print(balanza_planta.mostrar_en_cola())
+                # print('Balanza en planta:')
+                # print(balanza_planta.mostrar_en_cola())
                 if balanza_planta.libre:
                     nuevo_evento = balanza_planta.pesar_camion(reloj, FIN_PESAJE_PLANTA)
                     nuevos_eventos.append(nuevo_evento) 
@@ -142,8 +143,8 @@ def simulacion():
             elif evento_actual.nombre == ARRIBO_COLA_DESCARGA_MATERIA_PRIMA_PLANTA:
                 #print(f'Evento: ARRIBO_COLA_DESCARGA_MATERIA_PRIMA_PLANTA')
                 puesto_de_descarga_planta.cola.append(evento_actual.objeto)
-                print('Puesto de descarga [Planta]:')
-                print(puesto_de_descarga_planta.mostrar_en_cola())
+                # print('Puesto de descarga [Planta]:')
+                # print(puesto_de_descarga_planta.mostrar_en_cola())
                 if puesto_de_descarga_planta.libre:
                     cantidad_materia_prima_en_planta += evento_actual.objeto.carga_neta
                     nuevo_evento = puesto_de_descarga_planta.descargar_camion(reloj, FIN_DESCARGA_MATERIA_PRIMA_PLANTA)
@@ -180,8 +181,8 @@ def simulacion():
             elif evento_actual.nombre == ARRIBO_COLA_CARGA_PRODUCTO_TERMINADO:
                 #print(f'Evento: ARRIBO_COLA_CARGA_PRODUCTO_TERMINADO')
                 puesto_de_carga_planta.cola.append(evento_actual.objeto)
-                print('Puesto de carga [Planta]:')
-                print(puesto_de_carga_planta.mostrar_en_cola())
+                # print('Puesto de carga [Planta]:')
+                # print(puesto_de_carga_planta.mostrar_en_cola())
                 if puesto_de_carga_planta.libre and cantidad_de_producto_terminada_en_planta > 0:
                     nuevo_evento_1 = puesto_de_carga_planta.cargar_camion(reloj, FIN_CARGA_PRODUCTO_TERMINADO)
                     # Aca le doy el producto que puedo, todo o una parte
@@ -204,10 +205,10 @@ def simulacion():
             elif evento_actual.nombre == ARRIBO_COLA_DESCARGA_DISTRIBUCION:
                 #print(f'Evento: ARRIBO_COLA_DESCARGA_DISTRIBUCION')
                 puesto_de_descarga_centro_distribucion.cola.append(evento_actual.objeto)
-                print('Puesto de descarga [Planta]:')
-                print(puesto_de_descarga_centro_distribucion.mostrar_en_cola())
+                # print('Puesto de descarga [Planta]:')
+                # print(puesto_de_descarga_centro_distribucion.mostrar_en_cola())
                 if puesto_de_descarga_centro_distribucion.libre:
-                    cantidad_de_produccion_diaria += evento_actual.objeto.carga_neta # calculo para las estadisticas
+                    cantidad_producida += evento_actual.objeto.carga_neta # calculo para las estadisticas
                     nuevo_evento = puesto_de_descarga_centro_distribucion.descargar_camion(reloj, FIN_DESCARGA_CAMION_DISTRIBUCION)
                     nuevos_eventos.append(nuevo_evento)
 
@@ -227,8 +228,8 @@ def simulacion():
                 #print(f'Evento: ARRIBO_COLA_CARGA_REABASTECIMIENTO')
                 puesto_de_carga_centro_reabastecimiento.cola.append(evento_actual.objeto)
                 puesto_de_carga_centro_reabastecimiento.camion = evento_actual.objeto
-                print('Puesto de carga [Reabastecimiento]:')
-                print(puesto_de_carga_centro_reabastecimiento.mostrar_en_cola())
+                # print('Puesto de carga [Reabastecimiento]:')
+                # print(puesto_de_carga_centro_reabastecimiento.mostrar_en_cola())
                 if puesto_de_carga_centro_reabastecimiento.libre:
                     nuevo_evento = puesto_de_carga_centro_reabastecimiento.reabastecer_camion(reloj)
                     nuevos_eventos.append(nuevo_evento)
@@ -242,8 +243,7 @@ def simulacion():
                 nuevo_evento_2 = puesto_de_carga_centro_reabastecimiento.reabastecer_camion(reloj)
                 nuevos_eventos.extend([nuevo_evento_1, nuevo_evento_2])
             
-            #print(f'Reloj al final: {reloj}')
-            print("-"* 40)
+            # print("-"* 40)
             
             # Elimino los eventos futuros que son None
             nuevos_eventos = [e for e in nuevos_eventos if e is not None]
@@ -251,11 +251,19 @@ def simulacion():
             eventos_futuros.remove(evento_actual)
             eventos_futuros = ordenar_eventos(eventos_futuros)
 
+            # Voy sumando las producciones
+            print(f'Cantidad producida en manejo: {cantidad_producida}')
+            cantidad_producida_en_total.append(cantidad_producida)
+            
             if round(reloj / 900) == CORRIDAS + 1:
                 # Corto el bucle while de los dias
                 break
 
         print('Fin corridas')
+
+    print(f'Cantidad producida en cada anio: {cantidad_producida_en_total}')
+    print(f'Cantidad producida en total: {sum(cantidad_producida_en_total)}')
+    print(f'Cantidad producida en toneladas: {sum(cantidad_producida_en_total)/1000}')
 
 if __name__ == '__main__':
     simulacion()
