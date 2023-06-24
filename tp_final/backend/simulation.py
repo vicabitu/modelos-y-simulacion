@@ -21,7 +21,7 @@ def generar_tipo_de_camion(numero_aleatorio):
 
 def generar_camiones():
     camiones = []
-    for i in range(2):
+    for i in range(3):
         numero_aleatorio = random.random()
         tipo_de_camion = generar_tipo_de_camion(numero_aleatorio)
         camion = Camion(tipo_de_camion, i)
@@ -45,7 +45,7 @@ def resetear_camiones(camiones):
 
 def simulacion():
     EXPERIMENTOS = 1
-    CORRIDAS = 5
+    CORRIDAS = 6
     PUNTO_DE_REORDEN = 8000
 
     cantidad_materia_prima_en_planta = 0
@@ -62,8 +62,6 @@ def simulacion():
     puesto_de_carga_centro_reabastecimiento = PuestoCargaDescarga()
     balanza_planta = Balanza()
     planta = Planta()
-
-    cantidad_de_produccion_diaria = 0
 
     camiones = generar_camiones()
     eventos_futuros = ordenar_eventos(inicializar_eventos(camiones))
@@ -209,25 +207,26 @@ def simulacion():
                 print('Puesto de descarga [Planta]:')
                 print(puesto_de_descarga_centro_distribucion.mostrar_en_cola())
                 if puesto_de_descarga_centro_distribucion.libre:
-                    cantidad_de_produccion_diaria += puesto_de_descarga_centro_distribucion.camion.carga_neta # calculo para las estadisticas
+                    cantidad_de_produccion_diaria += evento_actual.objeto.carga_neta # calculo para las estadisticas
                     nuevo_evento = puesto_de_descarga_centro_distribucion.descargar_camion(reloj, FIN_DESCARGA_CAMION_DISTRIBUCION)
                     nuevos_eventos.append(nuevo_evento)
 
             elif evento_actual.nombre == FIN_DESCARGA_CAMION_DISTRIBUCION:
                 #print(f'Evento: FIN_DESCARGA_CAMION_DISTRIBUCION')
-                camion = puesto_de_descarga_centro_distribucion.camion
                 puesto_de_descarga_centro_distribucion.liberar()
-                puesto_de_descarga_centro_distribucion.descargar_camion(reloj)
+                camion = evento_actual.objeto
+                nuevo_evento_1 = puesto_de_descarga_centro_distribucion.descargar_camion(reloj, FIN_DESCARGA_CAMION_DISTRIBUCION)
                 if stock_en_barraca <= PUNTO_DE_REORDEN:
-                    nuevo_evento = camion.viajar(reloj, materia_prima=False, nombre_evento=ARRIBO_COLA_CARGA_REABASTECIMIENTO)
+                    nuevo_evento_2 = camion.viajar(reloj, materia_prima=False, nombre_evento=ARRIBO_COLA_CARGA_REABASTECIMIENTO)
                 else:
-                    nuevo_evento = camion.viajar(reloj, materia_prima=False, nombre_evento=ARRIBO_COLA_CARGA_BARRACA)
-                nuevos_eventos.append(nuevo_evento)
+                    nuevo_evento_2 = camion.viajar(reloj, materia_prima=False, nombre_evento=ARRIBO_COLA_CARGA_BARRACA)
+                nuevos_eventos.extend([nuevo_evento_1, nuevo_evento_2])
 
             # Centro reabastecimiento
             elif evento_actual.nombre == ARRIBO_COLA_CARGA_REABASTECIMIENTO:
                 #print(f'Evento: ARRIBO_COLA_CARGA_REABASTECIMIENTO')
                 puesto_de_carga_centro_reabastecimiento.cola.append(evento_actual.objeto)
+                puesto_de_carga_centro_reabastecimiento.camion = evento_actual.objeto
                 print('Puesto de carga [Reabastecimiento]:')
                 print(puesto_de_carga_centro_reabastecimiento.mostrar_en_cola())
                 if puesto_de_carga_centro_reabastecimiento.libre:
@@ -238,8 +237,10 @@ def simulacion():
                 #print(f'Evento: FIN_CARGA_CAMION_REABASTECIMIENTO')
                 puesto_de_carga_centro_reabastecimiento.liberar()
                 camion = evento_actual.objeto
-                nuevo_evento = camion.viajar(reloj, materia_prima=True, nombre_evento=ARRIBO_COLA_DESCARGA_BARRACA)
-                nuevos_eventos.append(nuevo_evento)
+                puesto_de_carga_centro_reabastecimiento.camion = camion
+                nuevo_evento_1 = camion.viajar(reloj, materia_prima=True, nombre_evento=ARRIBO_COLA_DESCARGA_BARRACA)
+                nuevo_evento_2 = puesto_de_carga_centro_reabastecimiento.reabastecer_camion(reloj)
+                nuevos_eventos.extend([nuevo_evento_1, nuevo_evento_2])
             
             #print(f'Reloj al final: {reloj}')
             print("-"* 40)
