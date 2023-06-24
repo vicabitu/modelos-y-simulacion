@@ -35,6 +35,10 @@ class PuestoCargaDescarga(Recurso):
             self.liberar()
 
     def reabastecer_camion(self, reloj):
-        duracion = self.camion.cargar_al_maximo(reloj)
-        return Evento(self.camion, duracion, FIN_CARGA_CAMION_REABASTECIMIENTO)
-
+        if len(self.cola) > 0:
+            self.camion = self.cola.pop(0)
+            self.libre = False
+            duracion = self.camion.cargar_al_maximo(reloj)
+            return Evento(self.camion, duracion, FIN_CARGA_CAMION_REABASTECIMIENTO)
+        else:
+            self.liberar()
