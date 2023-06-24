@@ -9,8 +9,7 @@ class Balanza(Recurso):
     def pesar_camion(self, reloj, nombre_evento=FIN_PESAJE_PLANTA):
         if len(self.cola) > 0:
             self.libre = False
-            camion = self.cola.pop(0)
-            self.camion = camion
+            self.camion = self.cola.pop(0)
             duracion = self.camion.calcular_tiempo_de_pesaje(reloj)
             return Evento(self.camion, duracion, nombre_evento)
         else:
