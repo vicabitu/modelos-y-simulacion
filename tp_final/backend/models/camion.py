@@ -14,10 +14,10 @@ class Camion:
     def set_carga(self):
         pesaje = self.calcular_pesaje()
         if pesaje < PESO_CAMIONES.get(self.tipo).get('sin_carga'):
-            pesaje = PESO_CAMIONES.get(self.tipo).get('sin_carga')
+            pesaje = PESO_CAMIONES.get(self.tipo).get('sin_carga') + 5
         elif pesaje > PESO_CAMIONES.get(self.tipo).get('peso_maximo'):
             pesaje = PESO_CAMIONES.get(self.tipo).get('peso_maximo')
-        self.carga_neta = pesaje - PESO_CAMIONES.get(self.tipo).get('sin_carga')
+        self.carga_neta = (pesaje - PESO_CAMIONES.get(self.tipo).get('sin_carga')) * 1000 
 
     def calcular_tiempo_de_viaje(self, reloj):
         media = TIEMPOS_DE_VIAJE.get(self.tipo).get('media')
