@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from constants import *
 from .evento import Evento
@@ -31,4 +32,4 @@ class Planta:
         #  7 / 1.1 = 7 - 6.3 = 0.7 # sobran 0.7 ton materia prima
         ciclos = cantidad_materia_prima_en_planta / CANTIDAD_MATERIA_PRIMA_PARA_PRODUCIR
         ciclo_incompleto, ciclos_completos = math.modf(ciclos) # ciclo_incompleto da un número con coma.
-        return ciclos_completos, round(ciclo_incompleto, 3)
+        return int(ciclos_completos), round(ciclo_incompleto, 3)
