@@ -3,8 +3,6 @@ from .evento import Evento
 from constants import *
 
 class PuestoCargaDescarga(Recurso):
-    def __init__(self, tipo='Puesto', libre=True, camion=None, cola=[]):
-        super().__init__(tipo, libre, camion, cola)
 
     def cargar_camion(self, reloj, nombre_evento=FIN_CARGA_BARRACA):
         if len(self.cola) > 0:

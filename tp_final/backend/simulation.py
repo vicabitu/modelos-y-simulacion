@@ -21,7 +21,7 @@ def generar_tipo_de_camion(numero_aleatorio):
 
 def generar_camiones():
     camiones = []
-    for i in range(3):
+    for i in range(2):
         numero_aleatorio = random.random()
         tipo_de_camion = generar_tipo_de_camion(numero_aleatorio)
         camion = Camion(tipo_de_camion, i)
@@ -45,7 +45,7 @@ def resetear_camiones(camiones):
 
 def simulacion():
     EXPERIMENTOS = 1
-    CORRIDAS = 6
+    CORRIDAS = 1
     PUNTO_DE_REORDEN = 8000
 
     cantidad_materia_prima_en_planta = 0
@@ -79,8 +79,8 @@ def simulacion():
             print(f'Dia: {round(reloj/900)}')
             # Aca puede ser que venga el problema del loop infinito
             reloj = evento_actual.duracion
-            # print(f'> Reloj: {reloj}')
-            # print(f"Procesando: {evento_actual}")
+            print(f'> Reloj: {reloj}')
+            print(f"Procesando: {evento_actual}")
             # Barraca:
             if evento_actual.nombre == ARRIBO_COLA_CARGA_BARRACA:
                 puesto_de_carga_barraca.cola.append(evento_actual.objeto)
@@ -189,7 +189,7 @@ def simulacion():
                     if cantidad_de_producto_terminada_en_planta <= nuevo_evento_1.objeto.carga_neta:
                         nuevo_evento_1.objeto.carga_neta = cantidad_de_producto_terminada_en_planta
                     cantidad_de_producto_terminada_en_planta -= nuevo_evento_1.objeto.carga_neta
-                    nuevos_eventos.append(nuevo_evento)
+                    nuevos_eventos.append(nuevo_evento_1)
 
             elif evento_actual.nombre == FIN_CARGA_PRODUCTO_TERMINADO:
                 #print(f'Evento: FIN_CARGA_PRODUCTO_TERMINADO')
@@ -252,13 +252,15 @@ def simulacion():
             eventos_futuros = ordenar_eventos(eventos_futuros)
 
             # Voy sumando las producciones
-            print(f'Cantidad producida en manejo: {cantidad_producida}')
-            cantidad_producida_en_total.append(cantidad_producida)
+            #print(f'Cantidad producida en manejo: {cantidad_producida}')
+            #cantidad_producida_en_total.append(cantidad_producida)
             
-            if round(reloj / 900) == CORRIDAS + 1:
+            if int(reloj / 900) == CORRIDAS:
                 # Corto el bucle while de los dias
                 break
-
+        
+        print(f"{cantidad_de_producto_terminada_en_planta=}")
+        print(f"Corridas completadas: {int(reloj / 900)}")
         print('Fin corridas')
 
     print(f'Cantidad producida en cada anio: {cantidad_producida_en_total}')
