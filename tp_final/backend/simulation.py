@@ -177,7 +177,6 @@ def simulacion():
             elif evento_actual.nombre == FIN_CARGA_PRODUCTO_TERMINADO:
                 puesto_de_carga_planta.liberar()
                 camion = evento_actual.objeto
-                # cantidad_de_producto_terminado_en_planta -= camion.carga_neta
                 camion.materia_prima = False
                 nuevo_evento_1 = Evento(camion, reloj + 1, ARRIBO_COLA_PESAJE_PLANTA)
                 # Me fijo si puedo pesar otro camion
