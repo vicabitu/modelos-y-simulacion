@@ -52,7 +52,7 @@ def simulacion():
     stock_en_barraca = 20000
     reloj = 0
     eventos_futuros = []
-    cantidad_de_producto_terminada_en_planta = 0
+    cantidad_de_producto_terminado_en_planta = 0
     cantidad_producida_en_total = []
     
     puesto_de_carga_barraca = PuestoCargaDescarga()
@@ -163,7 +163,7 @@ def simulacion():
                 if cantidad_materia_prima_en_planta >= CANTIDAD_MATERIA_PRIMA_PARA_PRODUCIR and planta.libre: #Empiezo a producir
                     ciclos_completos, ciclos_incompletos = planta.calcular_ciclos(cantidad_materia_prima_en_planta)
                     cantidad_materia_prima_en_planta -= ciclos_completos * 1000 # la cantidad de materia prima es igual a la cantidad de ciclos de producción porque 1.1 ton produce 1 ton
-                    cantidad_de_producto_terminada_en_planta += ciclos_completos * 1000
+                    cantidad_de_producto_terminado_en_planta += ciclos_completos * 1000
                     inicio = reloj
                     for ciclo in range(ciclos_completos):
                         nuevo_evento = planta.producir(inicio)
@@ -183,19 +183,19 @@ def simulacion():
                 puesto_de_carga_planta.cola.append(evento_actual.objeto)
                 # print('Puesto de carga [Planta]:')
                 # print(puesto_de_carga_planta.mostrar_en_cola())
-                if puesto_de_carga_planta.libre and cantidad_de_producto_terminada_en_planta > 0:
+                if puesto_de_carga_planta.libre and cantidad_de_producto_terminado_en_planta > 0:
                     nuevo_evento_1 = puesto_de_carga_planta.cargar_camion(reloj, FIN_CARGA_PRODUCTO_TERMINADO)
                     # Aca le doy el producto que puedo, todo o una parte
-                    if cantidad_de_producto_terminada_en_planta <= nuevo_evento_1.objeto.carga_neta:
-                        nuevo_evento_1.objeto.carga_neta = cantidad_de_producto_terminada_en_planta
-                    cantidad_de_producto_terminada_en_planta -= nuevo_evento_1.objeto.carga_neta
+                    if cantidad_de_producto_terminado_en_planta <= nuevo_evento_1.objeto.carga_neta:
+                        nuevo_evento_1.objeto.carga_neta = cantidad_de_producto_terminado_en_planta
+                    cantidad_de_producto_terminado_en_planta -= nuevo_evento_1.objeto.carga_neta
                     nuevos_eventos.append(nuevo_evento_1)
 
             elif evento_actual.nombre == FIN_CARGA_PRODUCTO_TERMINADO:
                 #print(f'Evento: FIN_CARGA_PRODUCTO_TERMINADO')
                 puesto_de_carga_planta.liberar()
                 camion = evento_actual.objeto
-                cantidad_de_producto_terminada_en_planta -= camion.carga_neta
+                cantidad_de_producto_terminado_en_planta -= camion.carga_neta
                 camion.materia_prima = False
 
                 nuevo_evento = Evento(camion, reloj + 1, ARRIBO_COLA_PESAJE_PLANTA)
@@ -259,7 +259,7 @@ def simulacion():
                 # Corto el bucle while de los dias
                 break
         
-        print(f"{cantidad_de_producto_terminada_en_planta=}")
+        print(f"{cantidad_de_producto_terminado_en_planta=}")
         print(f"Corridas completadas: {int(reloj / 900)}")
         print('Fin corridas')
 
