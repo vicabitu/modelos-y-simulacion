@@ -233,7 +233,6 @@ def simulacion():
             if int(reloj / MINS_SIMULACION) >= dia: # Fin de un dia
                 print(f'Finalice el dia {dia}')
                 cantidad_producida_en_cada_dia.append(suma_produccion_diaria)
-                print(planta.produccion_diaria)
                 if dia in planta.produccion_diaria.keys():
                     print(f"Producción diaria: {planta.produccion_diaria[dia] / 1000:.2f} tons")
                 dia += 1
@@ -246,8 +245,9 @@ def simulacion():
         print('Fin corridas')
         print(f"Corridas completadas: {int(reloj / MINS_SIMULACION)}")
         print(f'Cantidad producida por cada dia (tons): {[c/1000.0 for c in planta.produccion_diaria.values()]}')
-        cantidad_producida_en_cada_anio.append(np.mean(list(planta.produccion_diaria.values())))
+        cantidad_producida_en_cada_anio.append(np.mean(list(planta.produccion_diaria.values()))) # Revisar este contador
 
+    # TODO: revisar estos contadores
     print(f'Cantidad producida de todos los anios: {np.sum(cantidad_producida_en_cada_anio) / 1000}')
     print(f'Cantidad producida (promedio por dia): {np.mean(cantidad_producida_en_cada_dia)}')
     
