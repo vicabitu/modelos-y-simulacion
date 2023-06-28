@@ -44,10 +44,12 @@ def resetear_camiones(camiones):
     for c in camiones:
         c.carga_neta = 0
 
-def simulacion():
-    EXPERIMENTOS = 1
-    CORRIDAS = 100
+def simulacion(anios: int, dias: int, horas: int, camiones: int):
+    EXPERIMENTOS = anios
+    CORRIDAS = dias
     PUNTO_DE_REORDEN = 8000
+    MINS_SIMULACION = horas
+    N_CAMIONES = camiones
 
     eventos_futuros = []
     barraca = Barraca()
@@ -64,11 +66,9 @@ def simulacion():
         print('Comienzo')
         resetear_camiones(camiones)
         reloj = 0
-        suma_produccion_diaria = 0
         dia = 1
         cantidad_producida_en_cada_dia = []
         while len(eventos_futuros) > 0 or dia == CORRIDAS:
-            cantidad_producida = 0
             nuevos_eventos = []
             nuevo_evento = None
             nuevo_evento_1 = None
@@ -204,8 +204,20 @@ def simulacion():
     ocupacion_en_pct = planta.balanza.tiempo_ocupada / tiempo_total * 100
     print(f"Minutos ocupación balanza: {planta.balanza.tiempo_ocupada}/{tiempo_total} ({ocupacion_en_pct:.2f}%)")
     print(f"Minutos ociosos balanza: {tiempo_total - planta.balanza.tiempo_ocupada}/{tiempo_total} ({100.0 - ocupacion_en_pct:.2f}%)")
+    tiempos_de_viaje_camiones = [c.tiempo_viajando for c in camiones]
+    print(tiempos_de_viaje_camiones)
+    print(sum(tiempos_de_viaje_camiones), tiempo_total)
+    tiempo_ocupacion_viajando_de_camiones = np.mean(tiempos_de_viaje_camiones) / tiempo_total * 100
+    tiempo_sin_viajar_camiones = 100.0 - tiempo_ocupacion_viajando_de_camiones
     print(f'Cantidad producida de todos los anios: {np.sum(cantidad_producida_en_cada_anio)}')
     print(f'Promedio de produccion en cada anio: {promedio_de_produccion_en_cada_anio}')
 
-if __name__ == '__main__':
-    simulacion()
+    response = {
+        'porcentajeOcupacionBalanza': f'{ocupacion_en_pct:.2f}',
+        'porcentajeOciosoBalanza': f'{100.0 - ocupacion_en_pct:.2f}',
+        'cantidadProducida': f'{cantidad_producida_en_cada_anio[0]}',
+        'promedioProduccion': f'{promedio_de_produccion_en_cada_anio[0]}',
+        'tiempoPromedioViajandoCamiones': f'{tiempo_ocupacion_viajando_de_camiones}',
+        'tiempoPromedioSinViajarCamiones': f'{tiempo_sin_viajar_camiones}',
+    }
+    return response
