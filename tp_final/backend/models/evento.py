@@ -3,6 +3,7 @@ class Evento:
         self.objeto = objeto
         self.duracion = duracion
         self.nombre = nombre
+        print(f'[Evento creado]: {self.nombre} | Recurso: {self.objeto} - Nuevo reloj: {self.duracion}')
     
     def __str__(self):
         info_camion = self.objeto.__str__()

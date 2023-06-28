@@ -26,11 +26,13 @@ class PuestoCargaDescarga(Recurso):
     def descargar_camion(self, reloj, nombre_evento=FIN_DESCARGA_BARRACA):
         if len(self.cola) > 0:
             self.camion = self.cola.pop(0)
+            carga = self.camion.carga_neta
             self.libre = False
             duracion = self.camion.descargar(reloj)
-            return Evento(self.camion, duracion, nombre_evento)
+            return Evento(self.camion, duracion, nombre_evento), carga
         else:
             self.liberar()
+            return None, 0
 
     def reabastecer_camion(self, reloj):
         if len(self.cola) > 0:

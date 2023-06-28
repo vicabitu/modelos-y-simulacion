@@ -10,14 +10,17 @@ class Camion:
         self.materia_prima = materia_prima #materia prima o producto terminado
         self.carga_neta = 0
         self.id = id
+        self.tiempo_viajando = 0
     
     def set_carga(self):
         pesaje = self.calcular_pesaje()
-        if pesaje < PESO_CAMIONES.get(self.tipo).get('sin_carga'):
+        if pesaje <= PESO_CAMIONES.get(self.tipo).get('sin_carga'):
             pesaje = PESO_CAMIONES.get(self.tipo).get('sin_carga') + 5
         elif pesaje > PESO_CAMIONES.get(self.tipo).get('peso_maximo'):
             pesaje = PESO_CAMIONES.get(self.tipo).get('peso_maximo')
-        self.carga_neta = (pesaje - PESO_CAMIONES.get(self.tipo).get('sin_carga')) * 1000 
+        self.carga_neta = (pesaje - PESO_CAMIONES.get(self.tipo).get('sin_carga')) * 1000
+        if self.carga_neta == 0:
+            print(f"{pesaje=} | peso sin carga={PESO_CAMIONES.get(self.tipo).get('sin_carga')}")
 
     def calcular_tiempo_de_viaje(self, reloj):
         media = TIEMPOS_DE_VIAJE.get(self.tipo).get('media')
@@ -38,6 +41,7 @@ class Camion:
 
     def viajar(self, reloj, materia_prima=False, nombre_evento=ARRIBO_COLA_CARGA_BARRACA):
         duracion = self.calcular_tiempo_de_viaje(reloj)
+        self.tiempo_viajando += duracion - reloj
         self.materia_prima = materia_prima # que transporta el camion? si es materia prima entonces True, sino False
         return Evento(self, duracion, nombre_evento)
     
@@ -54,7 +58,7 @@ class Camion:
     def cargar_al_maximo(self, reloj):
         peso_minimo = PESO_CAMIONES.get(self.tipo)['sin_carga']
         peso_maximo = PESO_CAMIONES.get(self.tipo)['peso_maximo']
-        self.carga_neta = peso_maximo - peso_minimo
+        self.carga_neta = (peso_maximo - peso_minimo) * 1000
         duracion = self.calcular_tiempo_carga_descarga(reloj)
         return duracion
 
