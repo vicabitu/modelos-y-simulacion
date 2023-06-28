@@ -48,7 +48,7 @@ def resetear_camiones(camiones):
 
 def simulacion():
     EXPERIMENTOS = 1
-    CORRIDAS = 300
+    CORRIDAS = 100
     PUNTO_DE_REORDEN = 8000
 
     cantidad_materia_prima_en_planta = 0
@@ -70,6 +70,7 @@ def simulacion():
     #puesto_de_carga_centro_reabastecimiento = PuestoCargaDescarga()
 
     cantidad_producida_en_cada_anio = [] # Se almacena la produccion total
+    promedio_de_produccion_en_cada_anio = []
 
     camiones = generar_camiones(N_CAMIONES)
     eventos_futuros = ordenar_eventos(inicializar_eventos(camiones))
@@ -232,7 +233,7 @@ def simulacion():
 
             if int(reloj / MINS_SIMULACION) >= dia: # Fin de un dia
                 print(f'Finalice el dia {dia}')
-                cantidad_producida_en_cada_dia.append(suma_produccion_diaria)
+                # cantidad_producida_en_cada_dia.append(suma_produccion_diaria)
                 if dia in planta.produccion_diaria.keys():
                     print(f"Producción diaria: {planta.produccion_diaria[dia] / 1000:.2f} tons")
                 dia += 1
@@ -242,19 +243,20 @@ def simulacion():
                 # Corto el bucle while de los dias
                 break
         
+        print('-'*12)
         print('Fin corridas')
         print(f"Corridas completadas: {int(reloj / MINS_SIMULACION)}")
-        print(f'Cantidad producida por cada dia (tons): {[c/1000.0 for c in planta.produccion_diaria.values()]}')
-        cantidad_producida_en_cada_anio.append(np.mean(list(planta.produccion_diaria.values()))) # Revisar este contador
-
-    # TODO: revisar estos contadores
-    print(f'Cantidad producida de todos los anios: {np.sum(cantidad_producida_en_cada_anio) / 1000}')
-    print(f'Cantidad producida (promedio por dia): {np.mean(cantidad_producida_en_cada_dia)}')
+        cantidad_producida_en_cada_dia = [c/1000.0 for c in planta.produccion_diaria.values()]
+        print(f'Cantidad producida por cada dia (tons): {cantidad_producida_en_cada_dia}')
+        cantidad_producida_en_cada_anio.append(sum(cantidad_producida_en_cada_dia))
+        promedio_de_produccion_en_cada_anio.append(np.mean(cantidad_producida_en_cada_dia))
     
     tiempo_total = MINS_SIMULACION * CORRIDAS * EXPERIMENTOS
     ocupacion_en_pct = planta.balanza.tiempo_ocupada / tiempo_total * 100
     print(f"Minutos ocupación balanza: {planta.balanza.tiempo_ocupada}/{tiempo_total} ({ocupacion_en_pct:.2f}%)")
     print(f"Minutos ociosos balanza: {tiempo_total - planta.balanza.tiempo_ocupada}/{tiempo_total} ({100.0 - ocupacion_en_pct:.2f}%)")
+    print(f'Cantidad producida de todos los anios: {np.sum(cantidad_producida_en_cada_anio)}')
+    print(f'Promedio de produccion en cada anio: {promedio_de_produccion_en_cada_anio}')
 
 if __name__ == '__main__':
     simulacion()
