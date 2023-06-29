@@ -44,16 +44,16 @@ def resetear_camiones(camiones):
     for c in camiones:
         c.carga_neta = 0
 
-def simulacion(anios: int, dias: int, horas: int, camiones: int):
+def simulacion(anios: int, dias: int, minutos: int, camiones: int):
     EXPERIMENTOS = anios
     CORRIDAS = dias
     PUNTO_DE_REORDEN = 8000
-    MINS_SIMULACION = horas
     N_CAMIONES = camiones
+    mins_simulacion = minutos
 
     eventos_futuros = []
     barraca = Barraca()
-    planta = Planta()
+    planta = Planta(mins_simulacion=mins_simulacion)
     centro_distribucion = CentroDistribucion()
     centro_reabastecimiento = CentroReabastecimiento()
     cantidad_producida_en_cada_anio = [] # Se almacena la produccion total
@@ -74,7 +74,7 @@ def simulacion(anios: int, dias: int, horas: int, camiones: int):
             nuevo_evento_1 = None
             nuevo_evento_2 = None
             evento_actual = eventos_futuros[0]
-            print(f'Dia: {int(reloj/ MINS_SIMULACION)} - Cantidad de eventos: {len(eventos_futuros) - 1}')
+            print(f'Dia: {int(reloj/ mins_simulacion)} - Cantidad de eventos: {len(eventos_futuros) - 1}')
             reloj = evento_actual.duracion
             print(f'> Reloj: {reloj}')
             print(f"Procesando: {evento_actual}")
@@ -182,25 +182,25 @@ def simulacion(anios: int, dias: int, horas: int, camiones: int):
 
             print(f"Cantidad de stock en la Barraca: {barraca.stock}")
 
-            if int(reloj / MINS_SIMULACION) >= dia: # Fin de un dia
+            if int(reloj / mins_simulacion) >= dia: # Fin de un dia
                 print(f'Finalice el dia {dia}')
                 if dia in planta.produccion_diaria.keys():
                     print(f"Producción diaria: {planta.produccion_diaria[dia] / 1000:.2f} tons")
                 dia += 1
             
-            if int(reloj / MINS_SIMULACION) >= CORRIDAS:
+            if int(reloj / mins_simulacion) >= CORRIDAS:
                 # Corto el bucle while de los dias
                 break
         
         print('-'*12)
         print('Fin corridas')
-        print(f"Corridas completadas: {int(reloj / MINS_SIMULACION)}")
+        print(f"Corridas completadas: {int(reloj / mins_simulacion)}")
         cantidad_producida_en_cada_dia = [c/1000.0 for c in planta.produccion_diaria.values()]
         print(f'Cantidad producida por cada dia (tons): {cantidad_producida_en_cada_dia}')
         cantidad_producida_en_cada_anio.append(sum(cantidad_producida_en_cada_dia))
         promedio_de_produccion_en_cada_anio.append(np.mean(cantidad_producida_en_cada_dia))
     
-    tiempo_total = MINS_SIMULACION * CORRIDAS * EXPERIMENTOS
+    tiempo_total = mins_simulacion * CORRIDAS * EXPERIMENTOS
     ocupacion_en_pct = planta.balanza.tiempo_ocupada / tiempo_total * 100
     print(f"Minutos ocupación balanza: {planta.balanza.tiempo_ocupada}/{tiempo_total} ({ocupacion_en_pct:.2f}%)")
     print(f"Minutos ociosos balanza: {tiempo_total - planta.balanza.tiempo_ocupada}/{tiempo_total} ({100.0 - ocupacion_en_pct:.2f}%)")
@@ -212,6 +212,7 @@ def simulacion(anios: int, dias: int, horas: int, camiones: int):
     print(f'Cantidad producida de todos los anios: {np.sum(cantidad_producida_en_cada_anio)}')
     print(f'Promedio de produccion en cada anio: {promedio_de_produccion_en_cada_anio}')
 
+    print(f"minutos sin materia prima por dia: \n{planta.tiempos_sin_materia_prima}")
     response = {
         'porcentajeOcupacionBalanza': f'{ocupacion_en_pct:.2f}',
         'porcentajeOciosoBalanza': f'{100.0 - ocupacion_en_pct:.2f}',
@@ -221,3 +222,6 @@ def simulacion(anios: int, dias: int, horas: int, camiones: int):
         'tiempoPromedioSinViajarCamiones': f'{tiempo_sin_viajar_camiones}',
     }
     return response
+
+if __name__ == "__main__":
+    simulacion(1, 300, 900, 2)

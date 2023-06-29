@@ -6,7 +6,7 @@ from .puesto_de_carga import PuestoCargaDescarga
 from .balanza import Balanza
 
 class Planta:
-    def __init__(self):
+    def __init__(self, mins_simulacion=MINS_SIMULACION):
         self.libre = True
         self.puesto_de_carga = PuestoCargaDescarga()
         self.puesto_de_descarga = PuestoCargaDescarga()
@@ -15,6 +15,10 @@ class Planta:
         self.producto_terminado = 0 # cantidad de producto terminado
         self.producto_terminado_total = 0 # cantidad de producto terminado
         self.produccion_diaria = {}
+        #self.marcas_de_tiempo_sin_materia_prima = {} # clave: #dia, valor: momento en que me quedo sin materia prima
+        #self.marcas_de_tiempo_con_materia_prima = {} # clave: #dia, valor: momento en que me llega materia prima
+        self.tiempos_sin_materia_prima = {}
+        self.mins_simulacion = mins_simulacion
 
     def __str__(self):
         estado = 'Libre' if self.libre else 'Ocupada'
@@ -23,9 +27,28 @@ class Planta:
     def calcular_tiempo_de_produccion(self, reloj):
         return 10 + round(np.random.exponential(scale=5)) + reloj
 
+    def descontar_tiempo_sin_materia_prima(self, reloj, dia):
+        # Asumiendo que la planta tiene cada dia como máximo self.mins_simulacion sin materia prima
+        # en este método, se le va descontando a tal valor, los minutos en los que si se dispone
+        # de materia prima. 
+        # Como resultado se obtiene un diccionario que refleja el tiempo sin materia prima por día.
+        # En el día más productivo, el valor es 0 (cero). Caso contrario es self.mins_simulacion sin materia prima.
+        
+        reloj_actualizado = np.remainder(reloj, self.mins_simulacion) # representa los minutos del dia correspondiente si el reloj se reseteara a 0 todos los dias.
+        if not dia in self.tiempos_sin_materia_prima.keys():
+            # si el día son 900 min, le restamos el reloj actualizado (que va a oscilar entre 0 y 900)
+            self.tiempos_sin_materia_prima.update({dia: self.mins_simulacion - reloj_actualizado})
+        else:
+            tiempo_restante = self.tiempos_sin_materia_prima[dia]
+            if (tiempo_restante - reloj_actualizado) > 0: # para evitar tener valores negativos
+                tiempo_restante -= reloj_actualizado
+            else:
+                self.tiempos_sin_materia_prima[dia] = 0
+    
     def producir(self, reloj, dia):
         eventos = []
         if self.materia_prima > CANTIDAD_MATERIA_PRIMA_PARA_PRODUCIR and self.libre:
+            self.descontar_tiempo_sin_materia_prima(reloj, dia)
             self.libre = False
             ciclos_completos, ciclos_incompletos = self.calcular_ciclos()
             self.materia_prima -= ciclos_completos * 1000 # la cantidad de materia prima es igual a la cantidad de ciclos de producción porque 1.1 ton produce 1 ton
@@ -45,7 +68,6 @@ class Planta:
                 eventos.append(evento)
                 if ciclo > 0:
                     inicio += duracion_previa
-
         return eventos
 
     def liberar(self):
