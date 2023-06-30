@@ -19,35 +19,43 @@ const defaultTheme = createTheme();
 export default function Home() {
   const [anios, setAnios] = React.useState<string>('');
   const [dias, setDias] = React.useState<string>('');
-  const [horas, setHoras] = React.useState<string>('');
+  const [balanzas, setBalanzas] = React.useState<string>('');
   const [cantidadCamiones, setCantidadCamiones] = React.useState<string>('');
-  const [activeSimulation, setActiveSimulation] = React.useState<boolean>(false)
-  const [simulationFinished, setSimulationFinished] = React.useState<boolean>(false)
+  const [activeSimulation, setActiveSimulation] = React.useState<boolean>(false);
+  const [simulationFinished, setSimulationFinished] = React.useState<boolean>(false);
+  const [porcentajeOcupacionBalanza, setPorcentajeOcupacionBalanza] = React.useState<string>('');
+  const [porcentajeOciosoBalanza, setPorcentajeOciosoBalanza] = React.useState<string>('');
+  const [cantidadProducida, setCantidadProducida] = React.useState<string>('');
+  const [promedioProduccion, setPromedioProduccion] = React.useState<string>('');
   const actualizarCantidadAnios = (nuevoValor: string) => {
     setAnios(nuevoValor);
   };
   const actualizarCantidadDias = (nuevoValor: string) => {
     setDias(nuevoValor);
   };
-  const actualizarCantidadHoras = (nuevoValor: string) => {
-    setHoras(nuevoValor);
+  const actualizarCantidadBalanzas = (nuevoValor: string) => {
+    setBalanzas(nuevoValor);
   };
   const actualizarCantidadCamiones = (nuevoValor: string) => {
     setCantidadCamiones(nuevoValor);
   };
   console.log(`Home - Anios: ${anios}`)
   console.log(`Home - Dias: ${dias}`)
-  console.log(`Home - Horas: ${horas}`)
+  console.log(`Home - Horas: ${balanzas}`)
   console.log(`Home - Cantidad de camiones: ${cantidadCamiones}`)
   console.log(`simulationFinished ${simulationFinished}`)
 
   const realizarSimulacion = async () => {
     try {
       setActiveSimulation(true)
-      const response = await fetch('http://localhost:8000')
+      const response = await fetch('http://localhost:8000?camiones=5&anios=1&dias=300&horas=900')
       const data = await response.json()
       console.log('Data')
       console.log(data)
+      setPorcentajeOcupacionBalanza(data.porcentajeOcupacionBalanza)
+      setPorcentajeOciosoBalanza(data.porcentajeOciosoBalanza)
+      setCantidadProducida(data.cantidadProducida)
+      setPromedioProduccion(data.promedioProduccion)
       setActiveSimulation(false)
       setSimulationFinished(true)
     } catch (error) {
@@ -80,19 +88,31 @@ export default function Home() {
       <Container component="main" maxWidth="sm" sx={{ mb: 4 }}>
         <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
           <Typography component="h1" variant="h4" align="center">
-            Formulario de datos
+            {simulationFinished ? 'Resultado de la simulación': 'Formulario de datos'}
           </Typography>
           <br/>
           {simulationFinished ? (
             <React.Fragment>
               <Typography variant="h5" gutterBottom>
+                Porcentaje de ocupacion de la balanza: {porcentajeOcupacionBalanza}
+              </Typography>
+              <Typography variant="h5" gutterBottom>
+                Porcentaje ocioso de la balanza: {porcentajeOciosoBalanza}
+              </Typography>
+              <Typography variant="h5" gutterBottom>
+                Cantidad producida: {cantidadProducida}
+              </Typography>
+              <Typography variant="h5" gutterBottom>
+                Promedio de produccion por día: {promedioProduccion}
+              </Typography>
+              {/* <Typography variant="h5" gutterBottom>
                 Thank you for your order.
               </Typography>
               <Typography variant="subtitle1">
                 Your order number is #2001539. We have emailed your order
                 confirmation, and will send you an update when your order has
                 shipped.
-              </Typography>
+              </Typography> */}
               <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <Button
                   variant="contained"
@@ -112,8 +132,8 @@ export default function Home() {
                 actualizarAnios={actualizarCantidadAnios}
                 dias={dias}
                 actualizarDias={actualizarCantidadDias}
-                horas={horas}
-                actualizarHoras={actualizarCantidadHoras}
+                balanzas={balanzas}
+                actualizarBalanzas={actualizarCantidadBalanzas}
               />
               <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                 {activeSimulation && (

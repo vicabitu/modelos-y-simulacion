@@ -15,8 +15,8 @@ interface Props {
   anios: string;
   actualizarDias: (nuevaCantidad: string) => void;
   dias: string;
-  actualizarHoras: (nuevaCantidad: string) => void;
-  horas: string;
+  actualizarBalanzas: (nuevaCantidad: string) => void;
+  balanzas: string;
 }
 
 export default function Form({
@@ -24,8 +24,8 @@ export default function Form({
   camiones,
   actualizarAnios,
   anios,
-  actualizarHoras,
-  horas,
+  actualizarBalanzas,
+  balanzas,
   actualizarDias,
   dias
   }: Props) {
@@ -37,10 +37,10 @@ export default function Form({
     actualizarAnios(event.target.value)
   };
   // console.log(`Form - Cantidad de anios: ${anios}`)
-  const handleChangeHoras = (event: ChangeEvent<HTMLInputElement>) => {
-    actualizarHoras(event.target.value)
+  const handleChangeBalanzas = (event: ChangeEvent<HTMLInputElement>) => {
+    actualizarBalanzas(event.target.value)
   };
-  // console.log(`Form - Cantidad de horas: ${horas}`)
+  // console.log(`Form - Cantidad de balanzas: ${balanzas}`)
   const handleChangeDias = (event: ChangeEvent<HTMLInputElement>) => {
     actualizarDias(event.target.value)
   };
@@ -103,14 +103,14 @@ export default function Form({
         <Grid item xs={12} sm={6}>
           <TextField
             required
-            id="horas"
-            name="horas"
-            label="Horas"
+            id="balanzas"
+            name="balanzas"
+            label="Balanzas"
             fullWidth
             autoComplete="shipping address-level2"
             variant="standard"
             type="number"
-            onChange={handleChangeHoras}
+            onChange={handleChangeBalanzas}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
