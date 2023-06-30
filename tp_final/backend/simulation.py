@@ -44,7 +44,7 @@ def resetear_camiones(camiones):
     for c in camiones:
         c.carga_neta = 0
 
-def simulacion(anios: int, dias: int, minutos: int, camiones: int):
+def simulacion(anios: int, dias: int, minutos: int, camiones: int, cant_balanzas: int):
     EXPERIMENTOS = anios
     CORRIDAS = dias
     PUNTO_DE_REORDEN = 8000
@@ -53,7 +53,7 @@ def simulacion(anios: int, dias: int, minutos: int, camiones: int):
 
     eventos_futuros = []
     barraca = Barraca()
-    planta = Planta(mins_simulacion=mins_simulacion)
+    planta = Planta(mins_simulacion=mins_simulacion, cant_balanzas=cant_balanzas)
     centro_distribucion = CentroDistribucion()
     centro_reabastecimiento = CentroReabastecimiento()
     cantidad_producida_en_cada_anio = [] # Se almacena la produccion total
@@ -103,13 +103,13 @@ def simulacion(anios: int, dias: int, minutos: int, camiones: int):
                 nuevos_eventos.extend([nuevo_evento_1, nuevo_evento_2])
             # Planta:
             elif evento_actual.nombre == ARRIBO_COLA_PESAJE_PLANTA:
-                planta.encolar_para_pesaje(evento_actual.objeto)
-                if planta.puede_pesar_camion():
-                    nuevo_evento = planta.pesar_camion(reloj)
+                id_balanza = planta.encolar_para_pesaje(evento_actual.objeto)
+                if planta.puede_pesar_camion(id_balanza):
+                    nuevo_evento = planta.pesar_camion(id_balanza, reloj)
                     nuevos_eventos.append(nuevo_evento) 
             elif evento_actual.nombre == FIN_PESAJE_PLANTA:
-                planta.liberar_balanza()
-                nuevo_evento_1 = planta.pesar_camion(reloj)
+                id_balanza = planta.liberar_balanza(evento_actual.objeto)
+                nuevo_evento_1 = planta.pesar_camion(id_balanza, reloj)
                 camion = evento_actual.objeto
                 if camion.materia_prima:
                     nuevo_evento_2 = Evento(camion, reloj + 1, ARRIBO_COLA_DESCARGA_MATERIA_PRIMA_PLANTA)
@@ -143,7 +143,7 @@ def simulacion(anios: int, dias: int, minutos: int, camiones: int):
                 planta.liberar_puesto_de_carga()
                 camion = evento_actual.objeto
                 camion.materia_prima = False
-                nuevo_evento_1 = Evento(camion, reloj + 1, ARRIBO_COLA_PESAJE_PLANTA)                
+                nuevo_evento_1 = Evento(camion, reloj + 1, ARRIBO_COLA_PESAJE_PLANTA)
                 nuevo_evento_2 = planta.cargar_camion(reloj)
                 nuevos_eventos.extend([nuevo_evento_1, nuevo_evento_2])
             # Centro de distribucion
@@ -201,9 +201,6 @@ def simulacion(anios: int, dias: int, minutos: int, camiones: int):
         promedio_de_produccion_en_cada_anio.append(np.mean(cantidad_producida_en_cada_dia))
     
     tiempo_total = mins_simulacion * CORRIDAS * EXPERIMENTOS
-    ocupacion_en_pct = planta.balanza.tiempo_ocupada / tiempo_total * 100
-    print(f"Minutos ocupación balanza: {planta.balanza.tiempo_ocupada}/{tiempo_total} ({ocupacion_en_pct:.2f}%)")
-    print(f"Minutos ociosos balanza: {tiempo_total - planta.balanza.tiempo_ocupada}/{tiempo_total} ({100.0 - ocupacion_en_pct:.2f}%)")
     tiempos_de_viaje_camiones = [c.tiempo_viajando for c in camiones]
     print(tiempos_de_viaje_camiones)
     print(sum(tiempos_de_viaje_camiones), tiempo_total)
@@ -212,10 +209,14 @@ def simulacion(anios: int, dias: int, minutos: int, camiones: int):
     print(f'Cantidad producida de todos los anios: {np.sum(cantidad_producida_en_cada_anio)}')
     print(f'Promedio de produccion en cada anio: {promedio_de_produccion_en_cada_anio}')
 
-    print(f"minutos sin materia prima por dia: \n{planta.tiempos_sin_materia_prima}")
+    print(f"Minutos sin materia prima por dia: \n{planta.tiempos_sin_materia_prima}")
+
+    tiempos_de_ocupacion = planta.tiempos_de_ocupacion_balanzas_pct(tiempo_total)
+    print("Array con objs para JSON response:")
+    print(f"{tiempos_de_ocupacion=}")
+
     response = {
-        'porcentajeOcupacionBalanza': f'{ocupacion_en_pct:.2f}',
-        'porcentajeOciosoBalanza': f'{100.0 - ocupacion_en_pct:.2f}',
+        'porcentajesOcupacionBalanzas': tiempos_de_ocupacion,
         'cantidadProducida': f'{cantidad_producida_en_cada_anio[0]}',
         'promedioProduccion': f'{promedio_de_produccion_en_cada_anio[0]}',
         'tiempoPromedioViajandoCamiones': f'{tiempo_ocupacion_viajando_de_camiones}',
@@ -224,4 +225,4 @@ def simulacion(anios: int, dias: int, minutos: int, camiones: int):
     return response
 
 if __name__ == "__main__":
-    simulacion(1, 300, 900, 2)
+    simulacion(1, 10, 900, 15, 3) # 2 balanzas

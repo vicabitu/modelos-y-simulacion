@@ -3,9 +3,10 @@ from .evento import Evento
 from constants import FIN_PESAJE_PLANTA
 
 class Balanza(Recurso):
-    def __init__(self, tipo='Balanza', libre=True, camion=None, cola=[]):
+    def __init__(self, id_, tipo='Balanza', libre=True, camion=None, cola=[]):
         super().__init__(tipo, libre, camion, cola)
         self.tiempo_ocupada = 0
+        self.id = id_
 
     def pesar_camion(self, reloj, nombre_evento=FIN_PESAJE_PLANTA):
         if len(self.cola) > 0:

@@ -6,17 +6,15 @@ from .puesto_de_carga import PuestoCargaDescarga
 from .balanza import Balanza
 
 class Planta:
-    def __init__(self, mins_simulacion=MINS_SIMULACION):
+    def __init__(self, mins_simulacion=MINS_SIMULACION, cant_balanzas=1):
         self.libre = True
         self.puesto_de_carga = PuestoCargaDescarga()
         self.puesto_de_descarga = PuestoCargaDescarga()
-        self.balanza = Balanza()
+        self.balanzas = {id_balanza: Balanza(id_=id_balanza) for id_balanza in range(cant_balanzas)}
         self.materia_prima = 0
         self.producto_terminado = 0 # cantidad de producto terminado
         self.producto_terminado_total = 0 # cantidad de producto terminado
         self.produccion_diaria = {}
-        #self.marcas_de_tiempo_sin_materia_prima = {} # clave: #dia, valor: momento en que me quedo sin materia prima
-        #self.marcas_de_tiempo_con_materia_prima = {} # clave: #dia, valor: momento en que me llega materia prima
         self.tiempos_sin_materia_prima = {}
         self.mins_simulacion = mins_simulacion
 
@@ -104,17 +102,21 @@ class Planta:
             self.materia_prima += carga
         return evento
 
-    def pesar_camion(self, reloj):
-        return self.balanza.pesar_camion(reloj, FIN_PESAJE_PLANTA)
+    def pesar_camion(self, id_balanza, reloj):
+        return self.balanzas[id_balanza].pesar_camion(reloj, FIN_PESAJE_PLANTA)
 
     def encolar_para_descarga(self, camion):
         self.puesto_de_descarga.cola.append(camion)
 
     def encolar_para_carga(self, camion):
         self.puesto_de_carga.cola.append(camion)
-    
+
     def encolar_para_pesaje(self, camion):
-        self.balanza.cola.append(camion)
+        # elegimos una balanza de manera aleatoria
+        idx_balanza = np.random.randint(0, len(self.balanzas))
+        balanza = self.balanzas[idx_balanza]
+        balanza.cola.append(camion)
+        return balanza.id
 
     def liberar_puesto_de_carga(self):
         self.puesto_de_carga.liberar()
@@ -122,12 +124,16 @@ class Planta:
     def liberar_puesto_de_descarga(self):
         self.puesto_de_descarga.liberar()
 
-    def liberar_balanza(self):
-        self.balanza.liberar()
+    def liberar_balanza(self, camion):
+        # buscamos y liberamos aquella balanza que tiene asociado al camion que viene por parámetros
+        for balanza in self.balanzas.values():
+            if balanza.camion == camion:
+                balanza.liberar()
+                return balanza.id
 
-    def puede_pesar_camion(self):
-        return self.balanza.libre
-    
+    def puede_pesar_camion(self, id_balanza):
+        return self.balanzas[id_balanza].libre
+
     def puede_descargar_camion(self):
         return self.puesto_de_descarga.libre
 
@@ -136,3 +142,20 @@ class Planta:
 
     def produccion_total_en_tons(self):
         return self.producto_terminado_total / 1000
+
+    def tiempos_de_ocupacion_balanzas(self):
+        return {balanza.id: balanza.tiempo_ocupada for balanza in self.balanzas}
+
+    def tiempos_de_ocupacion_balanzas_pct(self, tiempo_total):
+        tiempos_de_ocupacion = []
+        for id_, balanza in self.balanzas.items():
+            ocupacion_en_pct = balanza.tiempo_ocupada / tiempo_total * 100
+            tiempos_de_ocupacion.append({id_: {
+                                            "ocupacion": f'{ocupacion_en_pct:.2f}', 
+                                            "ociosos": f'{100.0 - ocupacion_en_pct:.2f}'
+                                        }})
+
+            print(f"Balanza {id_}")
+            print(f"Minutos ocupación: {balanza.tiempo_ocupada}/{tiempo_total} ({ocupacion_en_pct:.2f}%)")
+            print(f"Minutos ociosos: {tiempo_total - balanza.tiempo_ocupada}/{tiempo_total} ({100.0 - ocupacion_en_pct:.2f}%)")
+        return tiempos_de_ocupacion
