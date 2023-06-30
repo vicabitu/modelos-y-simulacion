@@ -16,6 +16,8 @@ app.add_middleware(
 )
 
 @app.get("/")
-def read_root():
-    simulacion()
-    return {"Hello": "World"}
+def read_root(anios: int, dias: int, balanzas: int, camiones: int):
+    print(f'Anios: {anios}')
+    print(f'Dias: {dias}')
+    print(f'Camiones: {camiones}')
+    return simulacion(anios, dias, balanzas, camiones)
