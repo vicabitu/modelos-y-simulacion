@@ -6,27 +6,25 @@ import Container from '@mui/material/Container';
 import Toolbar from '@mui/material/Toolbar';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
-import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Form from './Form'
 import FooterInfo from './FooterInfo';
+import { useRouter } from 'next/router';
+import { useSimulation } from '../SimulationContext';
 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
 export default function Home() {
+  const router = useRouter()
+  const { setSimulationData } = useSimulation();
   const [anios, setAnios] = React.useState<string>('');
   const [dias, setDias] = React.useState<string>('');
   const [balanzas, setBalanzas] = React.useState<string>('');
   const [cantidadCamiones, setCantidadCamiones] = React.useState<string>('');
   const [activeSimulation, setActiveSimulation] = React.useState<boolean>(false);
-  const [simulationFinished, setSimulationFinished] = React.useState<boolean>(false);
-  const [porcentajeOcupacionBalanza, setPorcentajeOcupacionBalanza] = React.useState<string>('');
-  const [porcentajeOciosoBalanza, setPorcentajeOciosoBalanza] = React.useState<string>('');
-  const [cantidadProducida, setCantidadProducida] = React.useState<string>('');
-  const [promedioProduccion, setPromedioProduccion] = React.useState<string>('');
   const actualizarCantidadAnios = (nuevoValor: string) => {
     setAnios(nuevoValor);
   };
@@ -39,32 +37,22 @@ export default function Home() {
   const actualizarCantidadCamiones = (nuevoValor: string) => {
     setCantidadCamiones(nuevoValor);
   };
-  console.log(`Home - Anios: ${anios}`)
-  console.log(`Home - Dias: ${dias}`)
-  console.log(`Home - Horas: ${balanzas}`)
-  console.log(`Home - Cantidad de camiones: ${cantidadCamiones}`)
-  console.log(`simulationFinished ${simulationFinished}`)
 
   const realizarSimulacion = async () => {
     try {
       setActiveSimulation(true)
-      const response = await fetch('http://localhost:8000?camiones=5&anios=1&dias=300&horas=900')
-      const data = await response.json()
-      console.log('Data')
-      console.log(data)
-      setPorcentajeOcupacionBalanza(data.porcentajeOcupacionBalanza)
-      setPorcentajeOciosoBalanza(data.porcentajeOciosoBalanza)
-      setCantidadProducida(data.cantidadProducida)
-      setPromedioProduccion(data.promedioProduccion)
-      setActiveSimulation(false)
-      setSimulationFinished(true)
+      const url = `http://localhost:8000?anios=${anios}&dias=${dias}&minutos=900&camiones=${cantidadCamiones}&cant_balanzas=${balanzas}`;
+      console.log(`URL: ${url}`);
+      const response = await fetch(url);
+      const data = (await response.json()) as Anio[];
+      console.log('Data');
+      console.log(data);
+      setSimulationData(data);
+      setActiveSimulation(false);
+      router.push('/simulation-result')
     } catch (error) {
       console.error('Error al realizar la llamada a la API:', error);
     }
-  }
-
-  const volverAlinicio = () => {
-    setSimulationFinished(false)
   }
 
   return (
@@ -88,42 +76,9 @@ export default function Home() {
       <Container component="main" maxWidth="sm" sx={{ mb: 4 }}>
         <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
           <Typography component="h1" variant="h4" align="center">
-            {simulationFinished ? 'Resultado de la simulación': 'Formulario de datos'}
+            Formulario de datos
           </Typography>
           <br/>
-          {simulationFinished ? (
-            <React.Fragment>
-              <Typography variant="h5" gutterBottom>
-                Porcentaje de ocupacion de la balanza: {porcentajeOcupacionBalanza}
-              </Typography>
-              <Typography variant="h5" gutterBottom>
-                Porcentaje ocioso de la balanza: {porcentajeOciosoBalanza}
-              </Typography>
-              <Typography variant="h5" gutterBottom>
-                Cantidad producida: {cantidadProducida}
-              </Typography>
-              <Typography variant="h5" gutterBottom>
-                Promedio de produccion por día: {promedioProduccion}
-              </Typography>
-              {/* <Typography variant="h5" gutterBottom>
-                Thank you for your order.
-              </Typography>
-              <Typography variant="subtitle1">
-                Your order number is #2001539. We have emailed your order
-                confirmation, and will send you an update when your order has
-                shipped.
-              </Typography> */}
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button
-                  variant="contained"
-                  onClick={volverAlinicio}
-                  sx={{ mt: 3, ml: 1}}
-                >
-                  Volver al inicio
-                </Button>
-              </Box>
-            </React.Fragment>
-          ) : (
             <React.Fragment>
               <Form
                 camiones={cantidadCamiones}
@@ -143,7 +98,7 @@ export default function Home() {
                     <CircularProgress />
                   </Box>
                 )}
-                {!activeSimulation && !simulationFinished && (
+                {!activeSimulation && (
                   <Button
                     variant="contained"
                     onClick={realizarSimulacion}
@@ -154,7 +109,6 @@ export default function Home() {
                 )}
               </Box>
             </React.Fragment>
-          )}
         </Paper>
         {/* Footer */}
         <Box sx={{ bgcolor: 'background.paper', p: 6 }} component="footer">
