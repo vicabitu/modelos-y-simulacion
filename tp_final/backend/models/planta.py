@@ -35,7 +35,7 @@ class Planta:
         reloj_actualizado = np.remainder(reloj, self.mins_simulacion) # representa los minutos del dia correspondiente si el reloj se reseteara a 0 todos los dias.
         if not dia in self.tiempos_sin_materia_prima.keys():
             # si el día son 900 min, le restamos el reloj actualizado (que va a oscilar entre 0 y 900)
-            self.tiempos_sin_materia_prima.update({dia: self.mins_simulacion - reloj_actualizado})
+            self.tiempos_sin_materia_prima.update({dia: int(self.mins_simulacion - reloj_actualizado)})
         else:
             tiempo_restante = self.tiempos_sin_materia_prima[dia]
             if (tiempo_restante - reloj_actualizado) > 0: # para evitar tener valores negativos
