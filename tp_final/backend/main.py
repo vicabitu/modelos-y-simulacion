@@ -16,8 +16,10 @@ app.add_middleware(
 )
 
 @app.get("/")
-def read_root(anios: int, dias: int, balanzas: int, camiones: int):
+def read_root(anios: int, dias: int, minutos: int, camiones: int, cant_balanzas: int):
     print(f'Anios: {anios}')
     print(f'Dias: {dias}')
+    print(f'Minutos: {minutos}')
     print(f'Camiones: {camiones}')
-    return simulacion(anios, dias, balanzas, camiones)
+    print(f'Balanzas: {cant_balanzas}')
+    return simulacion(anios, dias, minutos, camiones, cant_balanzas)

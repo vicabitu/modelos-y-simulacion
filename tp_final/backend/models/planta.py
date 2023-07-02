@@ -150,14 +150,11 @@ class Planta:
         tiempos_de_ocupacion = []
         for id_, balanza in self.balanzas.items():
             ocupacion_en_pct = balanza.tiempo_ocupada / tiempo_total * 100
-            tiempos_de_ocupacion.append({id_: {
-                                            "ocupacion": f'{ocupacion_en_pct:.2f}', 
-                                            "ociosos": f'{100.0 - ocupacion_en_pct:.2f}'
-                                        }})
-
-            print(f"Balanza {id_}")
-            print(f"Minutos ocupación: {balanza.tiempo_ocupada}/{tiempo_total} ({ocupacion_en_pct:.2f}%)")
-            print(f"Minutos ociosos: {tiempo_total - balanza.tiempo_ocupada}/{tiempo_total} ({100.0 - ocupacion_en_pct:.2f}%)")
+            tiempos_de_ocupacion.append({
+                "id": id_ + 1,
+                "ocupacion": f'{ocupacion_en_pct:.2f}', 
+                "ociosos": f'{100.0 - ocupacion_en_pct:.2f}'
+            })
         return tiempos_de_ocupacion
     
     def calcular_promedio_de_tiempo_sin_materia_prima(self):
