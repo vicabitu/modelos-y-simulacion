@@ -45,8 +45,6 @@ export default function Home() {
       console.log(`URL: ${url}`);
       const response = await fetch(url);
       const data = (await response.json()) as Anio[];
-      console.log('Data');
-      console.log(data);
       setSimulationData(data);
       setActiveSimulation(false);
       router.push('/simulation-result')

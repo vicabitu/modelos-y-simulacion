@@ -9,9 +9,10 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import AppBar from '@mui/material/AppBar';
 import FooterInfo from './FooterInfo';
-import Chart from './Chart';
 import CardInfo from './CardInfo';
 import { useSimulation } from '../SimulationContext';
+import SimpleBarChart from './SimpleBarChart';
+import Title from './Title';
 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
@@ -52,12 +53,12 @@ export default function Dashboard() {
             overflow: 'auto',
           }}
         >
-          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Grid sx={{marginBottom: -5}}>
+          <Container maxWidth="lg">
+            {/* <Grid sx={{marginBottom: -5}}>
               <Typography variant="h5" gutterBottom>
                 Datos de entrada:
               </Typography>
-            </Grid>
+            </Grid> */}
               {simulationData?.map((data) => {
                 return  (
                   <Grid key={data.anio} container spacing={2}>
@@ -74,7 +75,10 @@ export default function Dashboard() {
                           flexDirection: 'column',
                         }}
                       >
-                        <CardInfo titulo='Produccion total en toneladas' valor={data.cantidadDeProduccionTotal} />
+                        <CardInfo
+                          titulo='Produccion total en toneladas'
+                          valor={data.cantidadDeProduccionTotal}
+                        />
                       </Paper>
                     </Grid>
                     <Grid item xs={12} md={4} lg={4}>
@@ -85,7 +89,10 @@ export default function Dashboard() {
                           flexDirection: 'column',
                         }}
                       >
-                        <CardInfo titulo='Promedio de produccion (toneladas)' valor={data.promedioDeProduccion} />
+                        <CardInfo
+                          titulo='Promedio de produccion (toneladas)'
+                          valor={data.promedioDeProduccion}
+                        />
                       </Paper>
                     </Grid>
                     <Grid item xs={12} md={4} lg={4}>
@@ -96,7 +103,63 @@ export default function Dashboard() {
                           flexDirection: 'column',
                         }}
                       >
-                        <CardInfo titulo='Promedio minutos sin materia prima' valor={data.promedioMinutosSinMateriaPrimaPorDia} />
+                        <CardInfo
+                          titulo='Promedio minutos sin materia prima'
+                          valor={data.promedioMinutosSinMateriaPrimaPorDia}
+                        />
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={4} lg={4}>
+                      <Paper
+                        sx={{
+                          p: 2,
+                          display: 'flex',
+                          flexDirection: 'column',
+                        }}
+                      >
+                        <Title>Porcentaje de ocupacion de las balanzas </Title>
+                        {data.tiemposDeOcupacionBalanzas.map((balanza) => {
+                          return (
+                            <Grid>
+                              <Typography variant='h6'>
+                                {`Balanza: ${balanza.id}`} 
+                              </Typography>
+                              <Typography variant='h6'>
+                                {`Porcentaje ocupada: ${balanza.ocupacion}`}
+                              </Typography>
+                              <Typography variant='h6'>
+                                {`Porcentaje ocioso: ${balanza.ociosos}`}
+                              </Typography>
+                            </Grid>
+                          )})}
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={4} lg={4}>
+                      <Paper
+                        sx={{
+                          p: 2,
+                          display: 'flex',
+                          flexDirection: 'column',
+                        }}
+                      >
+                        <CardInfo
+                          titulo='Porcentaje de tiempo de viaje de camiones'
+                          valor={data.tiempoViajandoCamiones}
+                        />
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={4} lg={4}>
+                      <Paper
+                        sx={{
+                          p: 2,
+                          display: 'flex',
+                          flexDirection: 'column',
+                        }}
+                      >
+                        <CardInfo
+                          titulo='Porcentaje de tiempo sin viajar de camiones'
+                          valor={data.tiempoSinViajarCamiones}
+                        />
                       </Paper>
                     </Grid>
                     <Grid item xs={12} md={12} lg={12}>
@@ -105,10 +168,28 @@ export default function Dashboard() {
                           p: 2,
                           display: 'flex',
                           flexDirection: 'column',
-                          height: 240,
+                          height: 340,
                         }}
                       >
-                        <Chart />
+                        <SimpleBarChart
+                          title='Minutos sin materia prima en planta por día'
+                          data={data.minutosSinMateriaPrimaPorDia}
+                        />
+                      </Paper>
+                    </Grid>
+                    <Grid item xs={12} md={12} lg={12}>
+                      <Paper
+                        sx={{
+                          p: 2,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          height: 340,
+                        }}
+                      >
+                        <SimpleBarChart
+                          title='Cantidad producida por día'
+                          data={data.cantidadProducidaPorDia}
+                        />
                       </Paper>
                     </Grid>
                   </Grid>
